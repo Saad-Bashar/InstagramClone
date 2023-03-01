@@ -1,10 +1,13 @@
 import {View, Text, Image} from 'react-native';
 import styles from './styles';
+import {useNavigation} from '@react-navigation/native';
 
 import user from '../../assets/data/user.json';
 import Button from '../../components/Button';
+import {ProfileNavigationProp} from '../../navigation/types';
 
 const ProfileHeader = () => {
+  const navigation = useNavigation<ProfileNavigationProp>();
   return (
     <View style={styles.root}>
       <View style={styles.headerRow}>
@@ -35,12 +38,9 @@ const ProfileHeader = () => {
       <View style={{flexDirection: 'row'}}>
         <Button
           text="Edit Profile"
-          onPress={() => console.warn('On Edit Profile')}
+          onPress={() => navigation.navigate('Edit Profile')}
         />
-        <Button
-          text="Another button"
-          onPress={() => console.warn('On another button')}
-        />
+        <Button text="Go back" onPress={() => navigation.goBack()} />
       </View>
     </View>
   );

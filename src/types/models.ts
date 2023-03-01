@@ -7,7 +7,7 @@ export interface IPost {
   description: string;
   user: IUser;
   nofComments: number;
-  nofLikes: number;
+  nofLikes?: number;
   comments: IComment[];
 }
 

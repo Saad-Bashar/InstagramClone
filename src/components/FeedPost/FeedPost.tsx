@@ -1,31 +1,21 @@
 import {useState} from 'react';
-import {
-  View,
-  Text,
-  LayoutAnimation,
-  Image,
-  Pressable,
-  Platform,
-  UIManager,
-} from 'react-native';
+import {View, Text, StyleSheet, Image, Pressable} from 'react-native';
 import colors from '../../theme/colors';
+import fonts from '../../theme/fonts';
 import Comment from '../Comment';
+import DoublePressable from '../DoublePressable';
+import Carousel from '../Carousel';
+import VideoPlayer from '../VideoPlayer';
 import Entypo from 'react-native-vector-icons/Entypo';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+
+import {useNavigation} from '@react-navigation/native';
+import {FeedNavigationProp} from '../../navigation/types';
+
 import styles from './styles';
 import {IPost} from '../../types/models';
-import DoublePressable from '../DoublePressable';
-import Carousel from '../Carousel';
-import VideoPlayer from '../VideoPlayer';
-
-if (
-  Platform.OS === 'android' &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 interface IFeedPost {
   post: IPost;
@@ -34,32 +24,40 @@ interface IFeedPost {
 
 const FeedPost = (props: IFeedPost) => {
   const {post, isVisible = false} = props;
+
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [isLiked, setIsLiked] = useState(true);
+
+  const navigation = useNavigation<FeedNavigationProp>();
+
+  const navigateToUser = () => {
+    navigation.navigate('UserProfile', {userId: post.user.id});
+  };
+
+  const navigateToComments = () => {
+    navigation.navigate('Comments', {postId: post.id});
+  };
+
+  const toggleDescriptionExpanded = () => {
+    setIsDescriptionExpanded(existingValue => !existingValue);
+  };
 
   const toggleLike = () => {
     setIsLiked(v => !v);
   };
 
-  const toggleDescriptionExpanded = () => {
-    setIsDescriptionExpanded(existingValue => !existingValue);
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
-  };
-
   let content;
   if (post.image) {
     content = (
-      <DoublePressable onDoublePress={toggleLike}>
-        <Image
-          source={{
-            uri: post.image,
-          }}
-          style={styles.image}
-        />
-      </DoublePressable>
+      <Image
+        source={{
+          uri: post.image,
+        }}
+        style={styles.image}
+      />
     );
   } else if (post.images) {
-    content = <Carousel images={post.images} onDoublePress={toggleLike} />;
+    content = <Carousel images={post.images} />;
   } else if (post.video) {
     content = <VideoPlayer uri={post.video} paused={!isVisible} />;
   }
@@ -74,7 +72,9 @@ const FeedPost = (props: IFeedPost) => {
           }}
           style={styles.userAvatar}
         />
-        <Text style={styles.userName}>{post.user.username}</Text>
+        <Text onPress={navigateToUser} style={styles.userName}>
+          {post.user.username}
+        </Text>
 
         <Entypo
           name="dots-three-horizontal"
@@ -84,7 +84,7 @@ const FeedPost = (props: IFeedPost) => {
       </View>
 
       {/* Content */}
-      {content}
+      <DoublePressable onDoublePress={toggleLike}>{content}</DoublePressable>
 
       {/* Footer */}
       <View style={styles.footer}>
@@ -97,7 +97,6 @@ const FeedPost = (props: IFeedPost) => {
               color={isLiked ? colors.accent : colors.black}
             />
           </Pressable>
-
           <Ionicons
             name="chatbubble-outline"
             size={24}
@@ -130,13 +129,14 @@ const FeedPost = (props: IFeedPost) => {
           <Text style={styles.bold}>{post.user.username}</Text>{' '}
           {post.description}
         </Text>
-
         <Text onPress={toggleDescriptionExpanded}>
           {isDescriptionExpanded ? 'less' : 'more'}
         </Text>
 
         {/* Comments */}
-        <Text>View all {post.nofComments} comments</Text>
+        <Text onPress={navigateToComments}>
+          View all {post.nofComments} comments
+        </Text>
         {post.comments.map(comment => (
           <Comment key={comment.id} comment={comment} />
         ))}
